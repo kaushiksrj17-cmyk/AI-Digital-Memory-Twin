@@ -1,0 +1,97 @@
+# ==============================================================================
+# ECHO — AI Digital Memory Twin (.gitignore)
+# Root Directory: D:\ECHO
+# ==============================================================================
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Node & Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts.bak
+
+# Python & Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+backend/*/*/*/__pycache__/
+.venv/
+env/
+venv/
+ENV/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.lcov
+
+
+# Local Media & Storage (Preserve directory structure, ignore local payload files)
+storage/local/uploads/*
+!storage/local/uploads/.gitkeep
+storage/local/cache/*
+!storage/local/cache/.gitkeep
+storage/local/encrypted/*
+!storage/local/encrypted/.gitkeep
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+logs/
+backend/logs/*
+!backend/logs/.gitkeep
+
+# ECHO local databases and private media
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+/storage/local/**
+/storage/originals/**
+/storage/processed/**
+/storage/thumbnails/**
+/storage/temporary/**
+/storage/exports/**
+/storage/voice/**
+
+# Secrets and environments
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+
+
+# Exclude private local media and generated files
+/storage/originals/**
+/storage/processed/**
+/storage/thumbnails/**
+/storage/temporary/**
+/storage/exports/**
+*.sqlite
+*.sqlite3
+*.db-journal
+

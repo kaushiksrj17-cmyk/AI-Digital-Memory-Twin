@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ECHORetrievalBenchmarkSchema",
+  "description": "Standardized schema for evaluating evidence retrieval precision, recall, and grounding integrity in ECHO. If no labeled evaluation benchmark is executed, evaluation status remains NOT EVALUATED.",
+  "type": "object",
+  "required": [
+    "benchmark_id",
+    "evaluation_status",
+    "queries"
+  ],
+  "properties": {
+    "benchmark_id": {
+      "type": "string",
+      "description": "Unique identifier for evaluation suite run"
+    },
+    "evaluation_status": {
+      "type": "string",
+      "enum": ["NOT EVALUATED", "EVALUATED", "IN_PROGRESS"],
+      "default": "NOT EVALUATED"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "aggregate_metrics": {
+      "type": "object",
+      "properties": {
+        "mean_precision": {
+          "type": ["number", "null"],
+          "description": "Mean precision across test queries (null if NOT EVALUATED)"
+        },
+        "mean_recall": {
+          "type": ["number", "null"],
+          "description": "Mean recall across test queries (null if NOT EVALUATED)"
+        },
+        "mean_f1": {
+          "type": ["number", "null"],
+          "description": "Harmonic mean of precision and recall"
+        },
+        "retrieval_accuracy": {
+          "type": ["number", "null"],
+          "description": "Fraction of queries with at least one verified ground-truth evidence in top-k"
+        },
+        "grounded_response_rate": {
+          "type": ["number", "null"],
+          "description": "Percentage of generated responses with valid evidentiary citation"
+        },
+        "unsupported_claim_rate": {
+          "type": ["number", "null"],
+          "description": "Percentage of claims without direct supporting evidence"
+        },
+        "mean_latency_ms": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "queries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "query_id",
+          "query",
+          "expected_evidence_ids"
+        ],
+        "properties": {
+          "query_id": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "expected_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "retrieved_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "relevance_labels": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2,
+              "description": "0=Irrelevant, 1=Partially Relevant, 2=Highly Relevant"
+            }
+          },
+          "precision": {
+            "type": ["number", "null"]
+          },
+          "recall": {
+            "type": ["number", "null"]
+          },
+          "f1": {
+            "type": ["number", "null"]
+          },
+          "retrieval_accuracy": {
+            "type": ["number", "null"]
+          },
+          "grounded_response_rate": {
+            "type": ["number", "null"]
+          },
+          "unsupported_claim_rate": {
+            "type": ["number", "null"]
+          },
+          "latency_ms": {
+            "type": ["number", "null"]
+          }
+        }
+      }
+    }
+  }
+}

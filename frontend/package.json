@@ -1,0 +1,32 @@
+{
+  "name": "echo-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node -r ./usb-patch.cjs ./node_modules/next/dist/bin/next dev",
+    "build": "node -r ./usb-patch.cjs ./node_modules/next/dist/bin/next build",
+    "start": "node -r ./usb-patch.cjs ./node_modules/next/dist/bin/next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@next/swc-win32-x64-msvc": "^14.2.15",
+    "@types/three": "^0.186.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.453.0",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4",
+    "three": "^0.186.1",
+    "ts-interface-checker": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.11",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.3"
+  }
+}
