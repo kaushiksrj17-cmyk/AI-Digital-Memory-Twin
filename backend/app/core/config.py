@@ -4,10 +4,19 @@ Loads environment variables, enforces D:\\ECHO storage boundary,
 and establishes ethical safeguards.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Any, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, field_validator
 from pathlib import Path
+import os
+
+# Detect repository root dynamically (4 levels up from backend/app/core/config.py)
+_DETECTED_ROOT = Path(__file__).resolve().parents[3]
+# Preserve D:\ECHO if it exists (local development on Windows), otherwise use detected root
+_DEFAULT_PROJECT_ROOT = "D:\\ECHO" if Path("D:\\ECHO").exists() else str(_DETECTED_ROOT)
+_DEFAULT_STORAGE_ROOT = str(Path(_DEFAULT_PROJECT_ROOT) / "storage" / "local")
+_DEFAULT_DB_FILE = (Path(_DEFAULT_STORAGE_ROOT) / "echo_dev.db").as_posix()
+_DEFAULT_DB_URL = f"sqlite+aiosqlite:///{_DEFAULT_DB_FILE}"
 
 
 class Settings(BaseSettings):
@@ -23,9 +32,9 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
 
-    # Storage Root Bound to D:\ECHO
-    PROJECT_ROOT: str = "D:\\ECHO"
-    STORAGE_ROOT: str = "D:\\ECHO\\storage\\local"
+    # Storage Root Bound to project boundary (defaults to D:\ECHO locally, /app in cloud)
+    PROJECT_ROOT: str = _DEFAULT_PROJECT_ROOT
+    STORAGE_ROOT: str = _DEFAULT_STORAGE_ROOT
 
     # Server Bind
     BACKEND_HOST: str = "127.0.0.1"
@@ -38,6 +47,32 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8000"
     ]
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
+        default_origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000"
+        ]
+        if isinstance(v, str):
+            # Parse comma-separated list from environment variable
+            origins = [item.strip().rstrip("/") for item in v.split(",") if item.strip()]
+            # Reject wildcard when credentials are enabled
+            origins = [o for o in origins if o != "*"]
+            for d in default_origins:
+                if d not in origins:
+                    origins.append(d)
+            return origins
+        elif isinstance(v, (list, tuple, set)):
+            origins = [str(item).strip().rstrip("/") for item in v if str(item).strip() and str(item) != "*"]
+            for d in default_origins:
+                if d not in origins:
+                    origins.append(d)
+            return origins
+        return default_origins
+
     # Security & Tokens
     SECRET_KEY: str = Field(
         default="REPLACE_IN_PRODUCTION_SECURE_RANDOM_ECHO_TOKEN_KEY_MIN_32_CHARS",
@@ -47,7 +82,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///D:/ECHO/storage/local/echo_dev.db"
+    DATABASE_URL: str = _DEFAULT_DB_URL
     DATABASE_ECHO: bool = False
 
     # AI Providers Configuration
@@ -82,7 +117,10 @@ class Settings(BaseSettings):
     )
 
     model_config = SettingsConfigDict(
-        env_file="D:\\ECHO\\.env",
+        env_file=(
+            str(Path(_DEFAULT_PROJECT_ROOT) / ".env"),
+            ".env"
+        ),
         env_file_encoding="utf-8",
         extra="ignore"
     )

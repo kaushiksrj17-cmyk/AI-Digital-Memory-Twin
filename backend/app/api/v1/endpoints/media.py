@@ -24,7 +24,11 @@ from storage.vault_storage import (
 from models.enums import SourceType, PrivacyLevel, ProcessingStatus, AuditAction
 from models.media import Media
 from backend.app.services.audit_service import audit_service
-from backend.app.core.security import get_current_user, can_access_privacy_level
+from backend.app.core.security import (
+    get_current_user,
+    get_current_user_or_visitor,
+    can_access_privacy_level
+)
 
 router = APIRouter()
 
@@ -65,7 +69,7 @@ media_registry: Dict[str, Media] = {
 
 @router.get("/", response_model=List[Media])
 async def list_media(
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """List preserved media assets in the vault filtered by privacy clearance."""
     role = current_user.get("role", "visitor")
@@ -79,7 +83,7 @@ async def list_media(
 async def get_media_metadata_or_file(
     media_id: str,
     download: bool = False,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """Retrieve media record metadata or stream the safe relative file."""
     media = media_registry.get(media_id)
@@ -261,7 +265,7 @@ async def delete_media(
 @router.get("/{media_id}/metadata")
 async def get_media_technical_metadata(
     media_id: str,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """Retrieve normalized technical metadata for a media asset."""
     from backend.app.services.metadata_service import metadata_service
@@ -295,7 +299,7 @@ async def get_media_technical_metadata(
 @router.get("/{media_id}/ocr")
 async def get_media_ocr_results(
     media_id: str,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """Retrieve OCR results for a media asset."""
     from backend.app.services.ocr_service import ocr_service
@@ -319,7 +323,7 @@ async def get_media_ocr_results(
 @router.get("/{media_id}/transcript")
 async def get_media_transcript_results(
     media_id: str,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """Retrieve audio transcript for a media asset."""
     from backend.app.services.transcription_service import transcription_service
@@ -343,7 +347,7 @@ async def get_media_transcript_results(
 @router.get("/{media_id}/keyframes")
 async def get_media_keyframes_results(
     media_id: str,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """Retrieve extracted keyframe snapshots for a video asset."""
     from backend.app.services.video_processor import video_processor

@@ -48,7 +48,7 @@ export default function RetrievalPage() {
         payload.provenance_filter = [provenanceFilter];
       }
 
-      const res = await fetch('http://localhost:8000/api/v1/retrieval/search', {
+      const res = await fetch('/api/v1/retrieval/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -69,7 +69,7 @@ export default function RetrievalPage() {
     setIndexing(true);
     setIndexMessage(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/embeddings/index/${profileId}`, {
+      const res = await fetch(`/api/v1/embeddings/index/${profileId}`, {
         method: 'POST'
       });
       if (res.ok) {

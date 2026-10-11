@@ -16,8 +16,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 import os
 import asyncio
+from pathlib import Path
+from backend.app.core.config import settings
 
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+DATABASE_URL = os.getenv("DATABASE_URL") or settings.DATABASE_URL
 
 has_aiosqlite = False
 try:
@@ -41,7 +43,20 @@ if DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres
         autoflush=False
     )
 elif has_aiosqlite:
-    ASYNC_DATABASE_URL = "sqlite+aiosqlite:///D:/ECHO/storage/local/echo_dev.db"
+    if "sqlite" in DATABASE_URL and "+aiosqlite" not in DATABASE_URL:
+        ASYNC_DATABASE_URL = DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://")
+    else:
+        ASYNC_DATABASE_URL = DATABASE_URL
+
+    # Ensure parent directory of local SQLite database file exists safely
+    if "sqlite" in ASYNC_DATABASE_URL:
+        db_path = ASYNC_DATABASE_URL.split(":///")[-1]
+        if db_path:
+            try:
+                Path(db_path).resolve().parent.mkdir(parents=True, exist_ok=True)
+            except Exception:
+                pass
+
     engine = create_async_engine(
         ASYNC_DATABASE_URL,
         echo=os.getenv("DATABASE_ECHO", "False").lower() == "true",
@@ -55,7 +70,15 @@ elif has_aiosqlite:
     )
 else:
     # Fallback to standard built-in SQLite engine
-    SYNC_DATABASE_URL = "sqlite:///D:/ECHO/storage/local/echo_dev.db"
+    SYNC_DATABASE_URL = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
+    if "sqlite" in SYNC_DATABASE_URL:
+        db_path = SYNC_DATABASE_URL.split(":///")[-1]
+        if db_path:
+            try:
+                Path(db_path).resolve().parent.mkdir(parents=True, exist_ok=True)
+            except Exception:
+                pass
+
     sync_engine = create_engine(
         SYNC_DATABASE_URL,
         connect_args={"check_same_thread": False},

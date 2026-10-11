@@ -34,7 +34,7 @@ import {
   SourceType
 } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export default function TimelinePage() {
   const [timelineData, setTimelineData] = useState<TimelineResponse | null>(null);

@@ -43,8 +43,8 @@ export default function KnowledgeGraphPage() {
     setLoading(true);
     try {
       const [nodesRes, relsRes] = await Promise.all([
-        fetch(`http://localhost:8000/api/v1/graph/nodes?memorial_profile_id=${profileId}&limit=150`).catch(() => null),
-        fetch(`http://localhost:8000/api/v1/graph/relationships?memorial_profile_id=${profileId}&limit=200`).catch(() => null),
+        fetch(`/api/v1/graph/nodes?memorial_profile_id=${profileId}&limit=150`).catch(() => null),
+        fetch(`/api/v1/graph/relationships?memorial_profile_id=${profileId}&limit=200`).catch(() => null),
       ]);
 
       if (nodesRes && nodesRes.ok) {
@@ -69,7 +69,7 @@ export default function KnowledgeGraphPage() {
     setRebuilding(true);
     setMessage(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/graph/rebuild/${profileId}`, {
+      const res = await fetch(`/api/v1/graph/rebuild/${profileId}`, {
         method: 'POST'
       });
       if (res.ok) {
@@ -88,7 +88,7 @@ export default function KnowledgeGraphPage() {
   const selectNode = async (node: GraphNodeModel) => {
     setSelectedNode(node);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/graph/nodes/${node.id}/neighbors?max_depth=1`);
+      const res = await fetch(`/api/v1/graph/nodes/${node.id}/neighbors?max_depth=1`);
       if (res.ok) {
         const nData = await res.json();
         setNeighborhood(nData);

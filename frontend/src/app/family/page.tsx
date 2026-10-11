@@ -27,7 +27,7 @@ import {
   Phase8Metrics
 } from '@/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export default function FamilyPage() {
   const [members, setMembers] = useState<FamilyMember[]>([]);

@@ -20,7 +20,7 @@ from backend.app.services.memory_service import (
     memory_service,
     UnauthorizedMemoryAccessError
 )
-from backend.app.core.security import get_current_user
+from backend.app.core.security import get_current_user, get_current_user_or_visitor
 
 router = APIRouter()
 
@@ -43,7 +43,7 @@ async def list_memories(
     include_archived: bool = Query(False, description="Include archived memories"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """List preserved memories with multi-attribute search and filtering."""
     return await memory_service.list_memories(
@@ -67,7 +67,7 @@ async def list_memories(
 @router.get("/{memory_id}", response_model=Memory)
 async def get_memory(
     memory_id: str,
-    current_user: Dict[str, Any] = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user_or_visitor)
 ):
     """Retrieve an individual preserved memory with provenance citations."""
     try:

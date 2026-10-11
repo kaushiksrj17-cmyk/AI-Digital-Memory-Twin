@@ -257,3 +257,45 @@ async def test_auth_login_with_roles_and_token_verification():
         res_me = await ac.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
         assert res_me.status_code == 200
         assert res_me.json()["role"] == UserRole.RESEARCHER.value
+
+
+@pytest.mark.asyncio
+async def test_unauthenticated_and_token_boundary_handling():
+    """Verify that unauthenticated, malformed, and expired tokens cannot access protected endpoints."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # 1. Missing token on protected profile endpoint -> 401 Unauthorized
+        res_no_tok = await ac.get("/api/v1/auth/me")
+        assert res_no_tok.status_code == 401
+        assert "WWW-Authenticate" in res_no_tok.headers
+
+        # 2. Missing token on protected audit endpoint -> 401 Unauthorized
+        res_audit_no_tok = await ac.get("/api/v1/audit/")
+        assert res_audit_no_tok.status_code == 401
+
+        # 3. Missing token on protected memory creation -> 401 Unauthorized
+        res_create_no_tok = await ac.post("/api/v1/memories/", json={
+            "title": "Anonymous Memory",
+            "category": "PERSONAL_STORIES",
+            "source_type": "DOCUMENT",
+            "privacy_level": "PRIVATE"
+        })
+        assert res_create_no_tok.status_code == 401
+
+        # 4. Malformed token -> 401 Unauthorized
+        res_bad_tok = await ac.get("/api/v1/auth/me", headers={"Authorization": "Bearer bad.token.here"})
+        assert res_bad_tok.status_code == 401
+
+        # 5. Expired token -> 401 Unauthorized
+        from datetime import timedelta
+        expired_token = create_access_token(
+            {"sub": "exp@echo.org", "role": UserRole.GUARDIAN.value},
+            expires_delta=timedelta(seconds=-120)
+        )
+        res_exp_tok = await ac.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {expired_token}"})
+        assert res_exp_tok.status_code == 401
+
+        # 6. Visitor without token CAN list public memories (returns 200 with public items)
+        res_pub_list = await ac.get("/api/v1/memories/")
+        assert res_pub_list.status_code == 200
+        assert isinstance(res_pub_list.json(), list)

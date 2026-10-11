@@ -85,13 +85,6 @@ backend/logs/*
 !.env.example
 
 
-# Exclude private local media and generated files
-/storage/originals/**
-/storage/processed/**
-/storage/thumbnails/**
-/storage/temporary/**
-/storage/exports/**
-*.sqlite
-*.sqlite3
-*.db-journal
+# Exclude deployment backups
+/storage/backups/**
 

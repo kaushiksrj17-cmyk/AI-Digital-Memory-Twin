@@ -41,10 +41,10 @@ export default function MemoryDNAPage() {
     setLoading(true);
     try {
       const [dnaRes, itemsRes, statsRes, histRes] = await Promise.all([
-        fetch(`http://localhost:8000/api/v1/memory-dna/${profileId}`).catch(() => null),
-        fetch(`http://localhost:8000/api/v1/memory-dna/${profileId}/items`).catch(() => null),
-        fetch(`http://localhost:8000/api/v1/memory-dna/${profileId}/stats`).catch(() => null),
-        fetch(`http://localhost:8000/api/v1/memory-dna/${profileId}/history`).catch(() => null),
+        fetch(`/api/v1/memory-dna/${profileId}`).catch(() => null),
+        fetch(`/api/v1/memory-dna/${profileId}/items`).catch(() => null),
+        fetch(`/api/v1/memory-dna/${profileId}/stats`).catch(() => null),
+        fetch(`/api/v1/memory-dna/${profileId}/history`).catch(() => null),
       ]);
 
       if (dnaRes && dnaRes.ok) {
@@ -74,7 +74,7 @@ export default function MemoryDNAPage() {
     setBuilding(true);
     setMessage(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/memory-dna/build/${profileId}`, {
+      const res = await fetch(`/api/v1/memory-dna/build/${profileId}`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -95,7 +95,7 @@ export default function MemoryDNAPage() {
 
   const handleVerify = async (itemId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/memory-dna/items/${itemId}/verify`, {
+      const res = await fetch(`/api/v1/memory-dna/items/${itemId}/verify`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -110,7 +110,7 @@ export default function MemoryDNAPage() {
 
   const handleReject = async (itemId: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/memory-dna/items/${itemId}/reject`, {
+      const res = await fetch(`/api/v1/memory-dna/items/${itemId}/reject`, {
         method: 'POST',
       });
       if (res.ok) {

@@ -128,13 +128,13 @@ export default function ResearchDashboardPage() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const benchRes = await fetch('http://127.0.0.1:8000/api/v1/research/benchmarks');
+      const benchRes = await fetch('/api/v1/research/benchmarks');
       if (benchRes.ok) {
         const bJson = await benchRes.json();
         setBenchmarkData(bJson);
       }
 
-      const telemRes = await fetch('http://127.0.0.1:8000/api/v1/research/metrics');
+      const telemRes = await fetch('/api/v1/research/metrics');
       if (telemRes.ok) {
         const tJson = await telemRes.json();
         setTelemetry(tJson);
@@ -154,7 +154,7 @@ export default function ResearchDashboardPage() {
     setIsRunningEvaluation(true);
     setErrorMsg(null);
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/research/benchmarks/run', {
+      const res = await fetch('/api/v1/research/benchmarks/run', {
         method: 'POST',
       });
       if (res.ok) {

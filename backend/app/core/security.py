@@ -168,7 +168,44 @@ def can_access_privacy_level(user_role: str, privacy_level: str) -> bool:
 
 
 async def get_current_user(token: Optional[str] = Depends(oauth2_scheme)) -> Dict[str, Any]:
-    """Retrieve authenticated user from Bearer token, with safe demo fallback."""
+    """Retrieve authenticated user from Bearer token.
+
+    Rejects missing, expired, or invalid tokens with HTTP 401 Unauthorized.
+    Never elevates an unauthenticated request or fabricates an administrative identity.
+    """
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication credentials were not provided.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired access token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    role = payload.get("role", UserRole.FAMILY_MEMBER.value)
+    sub = payload.get("sub", "user@echo-memorial.org")
+    return {
+        "id": payload.get("user_id", "auth-user-001"),
+        "email": sub,
+        "full_name": payload.get("full_name", "Authenticated Member"),
+        "role": role,
+        "is_active": True,
+        "is_authenticated": True,
+    }
+
+
+async def get_current_user_or_visitor(token: Optional[str] = Depends(oauth2_scheme)) -> Dict[str, Any]:
+    """Retrieve authenticated user if token is present, or visitor context if omitted.
+
+    If a token is passed but invalid/expired, raises HTTP 401 Unauthorized.
+    If no token is provided, returns an unauthenticated visitor context with zero administrative rights.
+    """
     if token:
         payload = decode_access_token(token)
         if not payload:
@@ -185,21 +222,28 @@ async def get_current_user(token: Optional[str] = Depends(oauth2_scheme)) -> Dic
             "full_name": payload.get("full_name", "Authenticated Member"),
             "role": role,
             "is_active": True,
+            "is_authenticated": True,
         }
-    
-    # Safe demo user fallback when no token is passed (Phase 1-8 compatibility)
+
     return {
-        "id": "demo-user-001",
-        "email": "guardian@echo-memorial.org",
-        "full_name": "Eleanor Vance (Memorial Guardian)",
-        "role": UserRole.VAULT_OWNER.value,
+        "id": None,
+        "email": None,
+        "full_name": "Anonymous Visitor",
+        "role": UserRole.VISITOR.value,
         "is_active": True,
+        "is_authenticated": False,
     }
 
 
 def require_role(allowed_roles: List[str]):
     """FastAPI dependency factory enforcing that user has one of allowed roles."""
     async def role_checker(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+        if not current_user.get("is_authenticated", False):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication credentials were not provided.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         if current_user.get("role") not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -212,6 +256,12 @@ def require_role(allowed_roles: List[str]):
 def require_permission(permission: Union[str, Permission]):
     """FastAPI dependency factory enforcing a specific operational permission."""
     async def perm_checker(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+        if not current_user.get("is_authenticated", False):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication credentials were not provided.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         role = current_user.get("role", UserRole.VISITOR.value)
         if not has_permission(role, permission):
             raise HTTPException(
